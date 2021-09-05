@@ -97,6 +97,14 @@ void ASWeapon::PlayFireEffects(const FVector& TraceEndPoint) const
 	{
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComponent, MuzzleSocketName);
 	}
+
+	if (APawn* MyOwner = Cast<APawn>(GetOwner()))
+	{
+		if (APlayerController* PC = Cast<APlayerController>(MyOwner->GetController()))
+		{
+			PC->ClientStartCameraShake(FireCamShake);
+		}
+	}
 }
 
 void ASWeapon::PlayImpactEffect(const FHitResult& HitResult) const
