@@ -9,23 +9,15 @@
 
 namespace
 {
-	float LINE_TRACE_DISTANCE = 10000;
+	int32 DebugWeaponDrawing = 0;
+	FAutoConsoleVariableRef CVarDebugWeaponDrawing(TEXT("COOP.DebugWeapons"), DebugWeaponDrawing, TEXT("Draw Debug Lines for Weapons"), ECVF_Cheat);
 }
 
 // Sets default values
 ASWeapon::ASWeapon()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	RootComponent = MeshComponent;
-}
-
-// Called when the game starts or when spawned
-void ASWeapon::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void ASWeapon::Fire()
@@ -33,14 +25,13 @@ void ASWeapon::Fire()
 	AActor* MyOwner = GetOwner();
 	if (!MyOwner) return;
 
-	const FVector TraceEndPoint = TraceWeaponFire();
-
-	PlayMuzzleEffect();
-	PlayTracerEffect(TraceEndPoint);
+	const FVector TraceEndPoint = TraceWeaponFireAndApplyDamage();
+	
+	PlayFireEffects(TraceEndPoint);
 }
 
 // Trace the world, from pawn eyes to crosshair location and apply result
-FVector ASWeapon::TraceWeaponFire()
+FVector ASWeapon::TraceWeaponFireAndApplyDamage()
 {
 	const AActor& MyOwner = *GetOwner();
 
@@ -48,7 +39,7 @@ FVector ASWeapon::TraceWeaponFire()
 	FRotator EyeRotation;
 	MyOwner.GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-	const FVector DefaultTraceEnd = EyeLocation + (EyeRotation.Vector() * LINE_TRACE_DISTANCE);
+	const FVector DefaultTraceEnd = EyeLocation + (EyeRotation.Vector() * LineTraceDistance);
 	FVector ActualTraceEnd = DefaultTraceEnd;
 
 	FHitResult HitResult;
@@ -71,7 +62,10 @@ bool ASWeapon::HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation,
 	QueryParams.AddIgnoredActor(this);
 	QueryParams.bTraceComplex = true; // Trace against each individual triangle of the hit mesh. This is more expensive but gives the exact location of the hit
 
-	//DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::Red, false, 1.f, 0, 1.f);
+	if (DebugWeaponDrawing > 0)
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::Red, false, 1.f, 0, 1.f);
+	}
 
 	return GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECC_Visibility, QueryParams);
 }
@@ -88,15 +82,7 @@ void ASWeapon::ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotat
 	PlayImpactEffect(HitResult);
 }
 
-void ASWeapon::PlayMuzzleEffect() const
-{
-	if (MuzzleEffect)
-	{
-		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComponent, MuzzleSocketName);
-	}
-}
-
-void ASWeapon::PlayTracerEffect(const FVector& TraceEndPoint) const
+void ASWeapon::PlayFireEffects(const FVector& TraceEndPoint) const
 {
 	if (TracerEffect)
 	{
@@ -105,6 +91,11 @@ void ASWeapon::PlayTracerEffect(const FVector& TraceEndPoint) const
 		{
 			TracerComponent->SetVectorParameter(TracerTargetName, TraceEndPoint);
 		}
+	}
+
+	if (MuzzleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComponent, MuzzleSocketName);
 	}
 }
 
@@ -115,10 +106,3 @@ void ASWeapon::PlayImpactEffect(const FHitResult& HitResult) const
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
 	}
 }
-
-// Called every frame
-void ASWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-

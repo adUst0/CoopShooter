@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
 
+class ASWeapon;
 class UCameraComponent;
 class USpringArmComponent;
 
@@ -36,14 +37,35 @@ protected:
 
 	void BeginCrouch();
 	void EndCrouch();
+    void BeginZoom();
+    void EndZoom();
+
+	void Fire();
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
 
+	bool bWantsToZoom;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float ZoomedFOV = 65.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClamMin = 0.1, ClampMax = 100.f))
+    float ZoomInterpSpeed = 20.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<ASWeapon> StartingWeaponClass;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
+	FName WeaponAttachSocketName = "WeaponSocket";
+
+	float DefaultFOV;
+	
+	ASWeapon* CurrentWeapon;
 private:
 	void SetupThirdPersonCamera();
 };

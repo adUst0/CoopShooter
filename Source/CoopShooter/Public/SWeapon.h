@@ -19,15 +19,10 @@ public:
 	// Sets default values for this actor's properties
 	ASWeapon();
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
     UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Fire();
+
+protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
 	USkeletalMeshComponent* MeshComponent;
@@ -50,11 +45,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
     UParticleSystem* TracerEffect;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float LineTraceDistance = 10000;
+
 private:
-	FVector TraceWeaponFire();
+	FVector TraceWeaponFireAndApplyDamage();
 	bool HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation, const FVector& TraceEnd) const;
     void ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotation);
 	void PlayMuzzleEffect() const;
-	void PlayTracerEffect(const FVector& TraceEndPoint) const;
+	void PlayFireEffects(const FVector& TraceEndPoint) const;
 	void PlayImpactEffect(const FHitResult& HitResult) const;
 };

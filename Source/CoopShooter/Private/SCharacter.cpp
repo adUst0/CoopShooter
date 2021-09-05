@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+#include <functional>
 
 #include "SCharacter.h"
 
+#include "SWeapon.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -33,12 +34,30 @@ void ASCharacter::SetupThirdPersonCamera()
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DefaultFOV = CameraComponent->FieldOfView;
+
+	// Spawn a default Weapon
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	CurrentWeapon = GetWorld()->SpawnActor<ASWeapon>(StartingWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParameters);
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->SetOwner(this);
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+	}
 }
 
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	const float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
+	const float NewFOV = FMath::FInterpTo(CameraComponent->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
+
+	CameraComponent->SetFieldOfView(NewFOV);
 }
 
 // Called to bind functionality to input
@@ -56,6 +75,11 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ASCharacter::EndCrouch);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ASCharacter::BeginZoom);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ASCharacter::EndZoom);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::Fire);
 }
 
 FVector ASCharacter::GetPawnViewLocation() const
@@ -81,4 +105,22 @@ void ASCharacter::BeginCrouch()
 void ASCharacter::EndCrouch()
 {
 	UnCrouch();
+}
+
+void ASCharacter::BeginZoom()
+{
+	bWantsToZoom = true;
+}
+
+void ASCharacter::EndZoom()
+{
+	bWantsToZoom = false;
+}
+
+void ASCharacter::Fire()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire();
+	}
 }
