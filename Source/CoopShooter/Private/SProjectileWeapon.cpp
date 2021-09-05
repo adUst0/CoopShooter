@@ -6,7 +6,10 @@
 void ASProjectileWeapon::Fire()
 {
     AActor* MyOwner = GetOwner();
-    if (!MyOwner || !ProjectileClass) return;
+    if (!MyOwner || !ProjectileClass)
+    {
+        return;
+    }
 
     FVector EyeLocation;
     FRotator EyeRotation;
