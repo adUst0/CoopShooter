@@ -26,7 +26,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Fire();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
@@ -36,7 +36,10 @@ protected:
 	TSubclassOf<UDamageType> DamageType;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-    FName MuzzleSocketName;
+    FName MuzzleSocketName = "MuzzleSocket"; // Check this on the Riffle Mesh
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    FName TracerTargetName = "BeamEnd"; // Check this in P_SmokeTrail -> Emitters -> Target -> Details -> Target -> Target -> Distribution -> Parameter Name
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
     UParticleSystem* MuzzleEffect;
@@ -44,7 +47,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
     UParticleSystem* ImpactEffect;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    UParticleSystem* TracerEffect;
+
 private:
-	bool HadBlockingHit(FHitResult& HitResult) const;
-	void ApplyDamage(const FHitResult& HitResult);
+	FVector TraceWeaponFire();
+	bool HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation, const FVector& TraceEnd) const;
+    void ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotation);
+	void PlayMuzzleEffect() const;
+	void PlayTracerEffect(const FVector& TraceEndPoint) const;
+	void PlayImpactEffect(const FHitResult& HitResult) const;
 };
