@@ -19,6 +19,8 @@ ASWeapon::ASWeapon()
 
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	RootComponent = MeshComponent;
+
+	MuzzleSocketName = "MuzzleSocket";
 }
 
 // Called when the game starts or when spawned
@@ -34,6 +36,11 @@ void ASWeapon::Fire()
 	if (HadBlockingHit(HitResult))
 	{
 		ApplyDamage(HitResult);
+	}
+
+	if (MuzzleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComponent, MuzzleSocketName);
 	}
 }
 
@@ -77,6 +84,11 @@ void ASWeapon::ApplyDamage(const FHitResult& HitResult)
 	const FVector ShotDirection = EyeRotation.Vector();
 
 	UGameplayStatics::ApplyPointDamage(HitActor, 20.f, ShotDirection, HitResult, MyOwner->GetInstigatorController(), this, DamageType);
+
+	if (ImpactEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+	}
 }
 
 // Called every frame
