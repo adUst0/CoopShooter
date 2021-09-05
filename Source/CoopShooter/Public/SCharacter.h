@@ -24,6 +24,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// Override the Pawn View location to return the Camera location for the line tracing of the Weapon
+	virtual FVector GetPawnViewLocation() const override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
