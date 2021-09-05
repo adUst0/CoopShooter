@@ -34,7 +34,7 @@ protected:
 	UParticleSystem* ExplosionParticle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
-    TSubclassOf<UDamageType> DamageTypeClass;
+	TSubclassOf<UDamageType> DamageTypeClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
 	float ProjectileDamage = 100.f;

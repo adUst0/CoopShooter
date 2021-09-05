@@ -1,6 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#include <functional>
-
 #include "SCharacter.h"
 
 #include "SWeapon.h"
@@ -11,12 +9,12 @@
 // Sets default values
 ASCharacter::ASCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SetupThirdPersonCamera();
 
-    ACharacter::GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+	ACharacter::GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	ACharacter::GetMovementComponent()->GetNavAgentPropertiesRef().bCanJump = true;
 }
 
@@ -84,7 +82,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 FVector ASCharacter::GetPawnViewLocation() const
 {
-    return CameraComponent ? CameraComponent->GetComponentLocation() : Super::GetPawnViewLocation();
+	return CameraComponent ? CameraComponent->GetComponentLocation() : Super::GetPawnViewLocation();
 }
 
 void ASCharacter::MoveForward(float Value)

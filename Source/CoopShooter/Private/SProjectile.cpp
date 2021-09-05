@@ -38,8 +38,8 @@ void ASProjectile::Explode()
 
 	UGameplayStatics::ApplyRadialDamage(this, ProjectileDamage, GetActorLocation(), ProjectileDamageRadius, DamageTypeClass, {}, this);
 
-    DrawDebugSphere(GetWorld(), GetActorLocation(), ProjectileDamageRadius, 12, FColor::Red, false, 1.f, 0, 2);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), ProjectileDamageRadius, 12, FColor::Red, false, 1.f, 0, 2);
 
-    Destroy();
+	Destroy();
 }
 

@@ -2,10 +2,13 @@
 
 
 #include "SWeapon.h"
+#include "CoopShooter/CoopShooter.h"
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "PhysicsCore\Public\Chaos\ChaosEngineInterface.h"
 
 namespace
 {
@@ -61,6 +64,7 @@ bool ASWeapon::HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation,
 	QueryParams.AddIgnoredActor(&MyOwner);
 	QueryParams.AddIgnoredActor(this);
 	QueryParams.bTraceComplex = true; // Trace against each individual triangle of the hit mesh. This is more expensive but gives the exact location of the hit
+	QueryParams.bReturnPhysicalMaterial = true;
 
 	if (DebugWeaponDrawing > 0)
 	{
@@ -109,8 +113,24 @@ void ASWeapon::PlayFireEffects(const FVector& TraceEndPoint) const
 
 void ASWeapon::PlayImpactEffect(const FHitResult& HitResult) const
 {
-	if (ImpactEffect)
+	UParticleSystem* SelectedEffect = nullptr;
+	const EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+
+	switch (SurfaceType)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+	case SURFACE_FLESH_DEFAULT:
+		SelectedEffect = FleshImpactEffect;
+		break;
+	case SURFACE_FLESH_VULNERABLE:
+		SelectedEffect = FleshImpactEffect; // TODO: Implement another effect
+		break;
+	default:
+		SelectedEffect = DefaultImpactEffect;
+		break;
+	}
+
+	if (SelectedEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedEffect, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
 	}
 }

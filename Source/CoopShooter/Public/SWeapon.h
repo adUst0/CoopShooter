@@ -20,7 +20,7 @@ public:
 	// Sets default values for this actor's properties
 	ASWeapon();
 
-    UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Fire();
 
 protected:
@@ -32,19 +32,22 @@ protected:
 	TSubclassOf<UDamageType> DamageType;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-    FName MuzzleSocketName = "MuzzleSocket"; // Check this on the Riffle Mesh
+	FName MuzzleSocketName = "MuzzleSocket"; // Check this on the Riffle Mesh
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-    FName TracerTargetName = "BeamEnd"; // Check this in P_SmokeTrail -> Emitters -> Target -> Details -> Target -> Target -> Distribution -> Parameter Name
+	FName TracerTargetName = "BeamEnd"; // Check this in P_SmokeTrail -> Emitters -> Target -> Details -> Target -> Target -> Distribution -> Parameter Name
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-    UParticleSystem* MuzzleEffect;
+	UParticleSystem* MuzzleEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-    UParticleSystem* ImpactEffect;
+	UParticleSystem* DefaultImpactEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-    UParticleSystem* TracerEffect;
+	UParticleSystem* FleshImpactEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem* TracerEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float LineTraceDistance = 10000;
@@ -54,7 +57,7 @@ protected:
 private:
 	FVector TraceWeaponFireAndApplyDamage();
 	bool HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation, const FVector& TraceEnd) const;
-    void ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotation);
+	void ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotation);
 	void PlayMuzzleEffect() const;
 	void PlayFireEffects(const FVector& TraceEndPoint) const;
 	void PlayImpactEffect(const FHitResult& HitResult) const;

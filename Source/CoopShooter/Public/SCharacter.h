@@ -37,13 +37,13 @@ protected:
 
 	void BeginCrouch();
 	void EndCrouch();
-    void BeginZoom();
-    void EndZoom();
+	void BeginZoom();
+	void EndZoom();
 
 	void Fire();
 
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -55,7 +55,7 @@ protected:
 	float ZoomedFOV = 65.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClamMin = 0.1, ClampMax = 100.f))
-    float ZoomInterpSpeed = 20.f;
+	float ZoomInterpSpeed = 20.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	TSubclassOf<ASWeapon> StartingWeaponClass;
