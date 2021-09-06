@@ -72,6 +72,9 @@ protected:
 
 	// Derived from RateOfFire
 	float SecondsBetweenShots;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* FireSound;
 private:
 	FVector TraceWeaponFireAndApplyDamage();
 	bool HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation, const FVector& TraceEnd) const;

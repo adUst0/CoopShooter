@@ -139,6 +139,11 @@ void ASWeapon::PlayFireEffects(const FVector& TraceEndPoint) const
 			PC->ClientStartCameraShake(FireCamShake);
 		}
 	}
+
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
+	}
 }
 
 void ASWeapon::PlayImpactEffect(const FHitResult& HitResult) const
