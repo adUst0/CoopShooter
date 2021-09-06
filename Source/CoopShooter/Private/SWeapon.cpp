@@ -21,6 +21,27 @@ ASWeapon::ASWeapon()
 {
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	RootComponent = MeshComponent;
+	MeshComponent->SetCollisionResponseToChannel(COLLISION_CHANNEL_WEAPON, ECollisionResponse::ECR_Block);
+}
+
+void ASWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SecondsBetweenShots = 60 / RateOfFire;
+}
+
+void ASWeapon::StartFire()
+{
+	// Prevent spamming the LClick to get faster shots
+	const float FirstDelay = FMath::Max(LastFireTime + SecondsBetweenShots - GetWorld()->TimeSeconds, 0.f);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_TimeBetweenShots, this, &ASWeapon::Fire, SecondsBetweenShots, true, FirstDelay);
+}
+
+void ASWeapon::StopFire()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_TimeBetweenShots);
 }
 
 void ASWeapon::Fire()
@@ -31,6 +52,8 @@ void ASWeapon::Fire()
 	const FVector TraceEndPoint = TraceWeaponFireAndApplyDamage();
 	
 	PlayFireEffects(TraceEndPoint);
+
+	LastFireTime = GetWorld()->TimeSeconds;
 }
 
 // Trace the world, from pawn eyes to crosshair location and apply result
@@ -71,7 +94,7 @@ bool ASWeapon::HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation,
 		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::Red, false, 1.f, 0, 1.f);
 	}
 
-	return GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECC_Visibility, QueryParams);
+	return GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, COLLISION_CHANNEL_WEAPON, QueryParams);
 }
 
 void ASWeapon::ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotation)
@@ -79,9 +102,16 @@ void ASWeapon::ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotat
 	const AActor& MyOwner = *GetOwner();
 	AActor* HitActor = HitResult.GetActor();
 
+	const EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+	float ActualDamage = BaseDamage;
+	if (SurfaceType == SURFACE_FLESH_VULNERABLE)
+	{
+		ActualDamage *= HeadshotDamageMultiplier;
+	}
+
 	const FVector ShotDirection = EyeRotation.Vector();
 
-	UGameplayStatics::ApplyPointDamage(HitActor, 20.f, ShotDirection, HitResult, MyOwner.GetInstigatorController(), this, DamageType);
+	UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, HitResult, MyOwner.GetInstigatorController(), this, DamageType);
 
 	PlayImpactEffect(HitResult);
 }

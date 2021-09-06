@@ -19,17 +19,24 @@ class COOPSHOOTER_API ASWeapon : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ASWeapon();
+	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire();
-
+	void StartFire();
+	void StopFire();
 protected:
+	virtual void Fire();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
 	USkeletalMeshComponent* MeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<UDamageType> DamageType;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float BaseDamage = 20.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float HeadshotDamageMultiplier = 4.f;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName MuzzleSocketName = "MuzzleSocket"; // Check this on the Riffle Mesh
@@ -54,11 +61,21 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<UMatineeCameraShake> FireCamShake;
+
+	FTimerHandle TimerHandle_TimeBetweenShots;
+
+	float LastFireTime;
+
+	// RPM - Bullets per minute fired by the weapon
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float RateOfFire = 600.f;
+
+	// Derived from RateOfFire
+	float SecondsBetweenShots;
 private:
 	FVector TraceWeaponFireAndApplyDamage();
 	bool HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation, const FVector& TraceEnd) const;
 	void ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotation);
-	void PlayMuzzleEffect() const;
 	void PlayFireEffects(const FVector& TraceEndPoint) const;
 	void PlayImpactEffect(const FHitResult& HitResult) const;
 };
