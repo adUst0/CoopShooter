@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
 
+class USHealthComponent;
 class ASWeapon;
 class UCameraComponent;
 class USpringArmComponent;
@@ -43,12 +44,19 @@ protected:
 	void StartFire();
 	void StopFire();
 
+	UFUNCTION()
+	void OnHealthChanged(USHealthComponent* HealthComponent, float Health, float HealthDelta, 
+		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USHealthComponent* HealthComponent;
 
 	bool bWantsToZoom;
 
@@ -67,6 +75,11 @@ protected:
 	float DefaultFOV;
 	
 	ASWeapon* CurrentWeapon;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	bool bIsDead;
+
 private:
 	void SetupThirdPersonCamera();
+	void SpawnDefaultWeapon();
 };
