@@ -8,6 +8,7 @@
 #include "CoopShooter/CoopShooter.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -49,6 +50,11 @@ void ASCharacter::BeginPlay()
 
 void ASCharacter::SpawnDefaultWeapon()
 {
+	if (GetLocalRole() != ROLE_Authority)
+	{
+		return;
+	}
+
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -158,4 +164,13 @@ void ASCharacter::OnHealthChanged(USHealthComponent* HComponent, float Health, f
 		DetachFromControllerPendingDestroy();
 		SetLifeSpan(5.f);
 	}
+}
+
+void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate to every client that is connected to us
+	DOREPLIFETIME(ASCharacter, CurrentWeapon);
+	DOREPLIFETIME(ASCharacter, bIsDead);
 }

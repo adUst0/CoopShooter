@@ -11,6 +11,21 @@ class UDamageType;
 class UParticleSystem;
 class UMatineeCameraShake;
 
+USTRUCT()
+struct FHitScanTrace
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TEnumAsByte<EPhysicalSurface> SurfaceType;
+	
+	UPROPERTY()
+	FVector_NetQuantize TraceTo;
+
+	UPROPERTY()
+	uint8 ForceUpdate = 1;
+};
+
 UCLASS()
 class COOPSHOOTER_API ASWeapon : public AActor
 {
@@ -25,6 +40,14 @@ public:
 	void StopFire();
 protected:
 	virtual void Fire();
+
+	// When this is called on the client, will not run on the client but will push the request to the server
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
+
+	UFUNCTION()
+	void OnRep_HitScanTrace();
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
 	USkeletalMeshComponent* MeshComponent;
@@ -75,10 +98,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	USoundBase* FireSound;
+
+	UPROPERTY(ReplicatedUsing=OnRep_HitScanTrace)
+	FHitScanTrace HitScanTrace;
 private:
 	FVector TraceWeaponFireAndApplyDamage();
 	bool HadBlockingHit(FHitResult& HitResult, const FVector& EyeLocation, const FVector& TraceEnd) const;
 	void ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotation);
 	void PlayFireEffects(const FVector& TraceEndPoint) const;
-	void PlayImpactEffect(const FHitResult& HitResult) const;
+	void PlayImpactEffect(EPhysicalSurface SurfaceType, FVector ImpactPoint) const;
 };

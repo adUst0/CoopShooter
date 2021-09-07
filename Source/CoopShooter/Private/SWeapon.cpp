@@ -6,6 +6,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "PhysicsCore\Public\Chaos\ChaosEngineInterface.h"
@@ -22,6 +23,11 @@ ASWeapon::ASWeapon()
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	RootComponent = MeshComponent;
 	MeshComponent->SetCollisionResponseToChannel(COLLISION_CHANNEL_WEAPON, ECollisionResponse::ECR_Block);
+
+	SetReplicates(true);
+
+	NetUpdateFrequency = 66.f;
+	MinNetUpdateFrequency = 33.f;
 }
 
 void ASWeapon::BeginPlay()
@@ -46,12 +52,23 @@ void ASWeapon::StopFire()
 
 void ASWeapon::Fire()
 {
+	if (GetLocalRole() < ROLE_Authority)
+	{
+		ServerFire();
+	}
+
 	AActor* MyOwner = GetOwner();
 	if (!MyOwner) return;
 
 	const FVector TraceEndPoint = TraceWeaponFireAndApplyDamage();
 	
 	PlayFireEffects(TraceEndPoint);
+
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		HitScanTrace.TraceTo = TraceEndPoint;
+		++HitScanTrace.ForceUpdate;
+	}
 
 	LastFireTime = GetWorld()->TimeSeconds;
 }
@@ -74,6 +91,10 @@ FVector ASWeapon::TraceWeaponFireAndApplyDamage()
 		ApplyDamage(HitResult, EyeRotation);
 
 		ActualTraceEnd = HitResult.ImpactPoint;
+	}
+	else if (GetLocalRole() == ROLE_Authority)
+	{
+		HitScanTrace.SurfaceType = SurfaceType_Default; // reset the surface type because it is valid only on blocking hit
 	}
 
 	return ActualTraceEnd;
@@ -113,7 +134,12 @@ void ASWeapon::ApplyDamage(const FHitResult& HitResult, const FRotator& EyeRotat
 
 	UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, HitResult, MyOwner.GetInstigatorController(), this, DamageType);
 
-	PlayImpactEffect(HitResult);
+	PlayImpactEffect(SurfaceType, HitResult.ImpactPoint);
+
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		HitScanTrace.SurfaceType = SurfaceType;
+	}
 }
 
 void ASWeapon::PlayFireEffects(const FVector& TraceEndPoint) const
@@ -146,10 +172,9 @@ void ASWeapon::PlayFireEffects(const FVector& TraceEndPoint) const
 	}
 }
 
-void ASWeapon::PlayImpactEffect(const FHitResult& HitResult) const
+void ASWeapon::PlayImpactEffect(EPhysicalSurface SurfaceType, FVector ImpactPoint) const
 {
 	UParticleSystem* SelectedEffect = nullptr;
-	const EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
 
 	switch (SurfaceType)
 	{
@@ -166,6 +191,38 @@ void ASWeapon::PlayImpactEffect(const FHitResult& HitResult) const
 
 	if (SelectedEffect)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedEffect, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+		//const FVector MuzzleLocation = MeshComponent->GetSocketLocation(MuzzleSocketName);
+		//FVector ShotDirection = ImpactPoint - MuzzleLocation;
+		//ShotDirection.Normalize();
+		FVector ShotDirection = ImpactPoint;
+		ShotDirection.Normalize();
+
+
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedEffect, ImpactPoint, ShotDirection.Rotation());
 	}
+}
+
+void ASWeapon::OnRep_HitScanTrace()
+{
+	PlayFireEffects(HitScanTrace.TraceTo);
+	PlayImpactEffect(HitScanTrace.SurfaceType, HitScanTrace.TraceTo);
+
+}
+
+void ASWeapon::ServerFire_Implementation()
+{
+	Fire();
+}
+
+bool ASWeapon::ServerFire_Validate()
+{
+	return true;
+}
+
+void ASWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate to every client that is connected to us
+	DOREPLIFETIME_CONDITION(ASWeapon, HitScanTrace, COND_SkipOwner);
 }

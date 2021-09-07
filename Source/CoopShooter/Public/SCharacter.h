@@ -73,10 +73,11 @@ protected:
 	FName WeaponAttachSocketName = "WeaponSocket";
 
 	float DefaultFOV;
-	
+
+	UPROPERTY(Replicated)
 	ASWeapon* CurrentWeapon;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
 	bool bIsDead;
 
 private:
