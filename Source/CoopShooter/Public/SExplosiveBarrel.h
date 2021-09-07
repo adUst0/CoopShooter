@@ -26,8 +26,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void OnHealthChanged(USHealthComponent* HealthComponent, float Health, float HealthDelta,
+	void OnHealthChanged(USHealthComponent* H, float Health, float HealthDelta,
 		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+
+	UFUNCTION()
+	void OnRep_Exploded();
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
@@ -48,5 +52,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "FX")
 	float ExplosionImpulse = 400.f;
 
+	UPROPERTY(ReplicatedUsing=OnRep_Exploded)
 	bool bHasExploded = false;
 };

@@ -5,6 +5,7 @@
 
 #include "SHealthComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "PhysicsEngine/RadialForceComponent.h"
 
 // Sets default values
@@ -27,6 +28,9 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	RadialForceComponent->bAutoActivate = false; // Prevent component from ticking, and only use FireImpulse() instead
 	RadialForceComponent->bIgnoreOwningActor = true; // ignore self
 	RadialForceComponent->Radius = 250;
+
+	SetReplicates(true);
+	AActor::SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned
@@ -41,17 +45,25 @@ void ASExplosiveBarrel::OnHealthChanged(USHealthComponent* H, float Health, floa
 	if (Health <= 0 && !bHasExploded)
 	{
 		bHasExploded = true;
+		OnRep_Exploded(); // Call this function also on the server to play the local UI effects
 
-		// Boost the barrel upwards
-		FVector BoostIntensity = FVector::UpVector * ExplosionImpulse;
-		MeshComponent->AddImpulse(BoostIntensity, NAME_None, true);
+		// This will be replicated to the clients because of AActor::SetReplicateMovement(true) from the constructor
+		// If it has no gameplay importance, we can disable it for optimization and apply the impulse on the client but positions may not be exactly the same on all machines
+		{
+			// Boost the barrel upwards
+			FVector BoostIntensity = FVector::UpVector * ExplosionImpulse;
+			MeshComponent->AddImpulse(BoostIntensity, NAME_None, true);
 
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
-		MeshComponent->SetMaterial(0, ExplodedMaterial);
-
-		// Blast away nearby physics actors
-		RadialForceComponent->FireImpulse();
+			// Blast away nearby physics actors
+			RadialForceComponent->FireImpulse();
+		}
 	}
+}
+
+void ASExplosiveBarrel::OnRep_Exploded()
+{
+	MeshComponent->SetMaterial(0, ExplodedMaterial);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
 }
 
 // Called every frame
@@ -61,3 +73,10 @@ void ASExplosiveBarrel::Tick(float DeltaTime)
 
 }
 
+void ASExplosiveBarrel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate to every client that is connected to us
+	DOREPLIFETIME(ASExplosiveBarrel, bHasExploded);
+}

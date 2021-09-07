@@ -18,7 +18,7 @@ void USHealthComponent::BeginPlay()
 
 	CurrentHealth = StartingHealth;
 
-	// Only hook if we are server
+	// Only hook if we are server so all the gameplay logic for health will be executed on the server
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		AActor* MyOwner = GetOwner();
