@@ -21,6 +21,8 @@ ASCharacter::ASCharacter()
 	ACharacter::GetMovementComponent()->GetNavAgentPropertiesRef().bCanJump = true;
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_CHANNEL_WEAPON, ECR_Ignore);
+
+	HealthComponent = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComponent"));
 }
 
 void ASCharacter::SetupThirdPersonCamera()
@@ -31,8 +33,6 @@ void ASCharacter::SetupThirdPersonCamera()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
-
-	HealthComponent = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called when the game starts or when spawned
