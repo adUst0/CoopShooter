@@ -151,7 +151,7 @@ void ASCharacter::StopFire()
 	}
 }
 
-void ASCharacter::OnHealthChanged(USHealthComponent* HComponent, float Health, float HealthDelta,
+void ASCharacter::OnHealthChanged(float Health, float HealthDelta,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Health <= 0.0f && !bIsDead)

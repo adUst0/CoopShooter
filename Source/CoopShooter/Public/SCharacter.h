@@ -45,7 +45,7 @@ protected:
 	void StopFire();
 
 	UFUNCTION()
-	void OnHealthChanged(USHealthComponent* HealthComponent, float Health, float HealthDelta, 
+	void OnHealthChanged(float Health, float HealthDelta, 
 		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 

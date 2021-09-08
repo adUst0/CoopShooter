@@ -39,7 +39,7 @@ void ASExplosiveBarrel::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ASExplosiveBarrel::OnHealthChanged(USHealthComponent* H, float Health, float HealthDelta,
+void ASExplosiveBarrel::OnHealthChanged(float Health, float HealthDelta,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Health <= 0 && !bHasExploded)
@@ -56,6 +56,10 @@ void ASExplosiveBarrel::OnHealthChanged(USHealthComponent* H, float Health, floa
 
 			// Blast away nearby physics actors
 			RadialForceComponent->FireImpulse();
+
+			TArray<AActor*> IgnoredActors;
+			IgnoredActors.Add(this);
+			UGameplayStatics::ApplyRadialDamage(this, ExplosionDamage, GetActorLocation(), ExplosionRadius, nullptr, IgnoredActors, this, GetInstigatorController(), true);
 		}
 	}
 }

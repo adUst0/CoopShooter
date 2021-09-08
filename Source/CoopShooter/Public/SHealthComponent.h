@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SHealthComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, USHealthComponent*, HealthComponent, float, Health, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, class AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnHealthChangedSignature, float, Health, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, class AActor*, DamageCauser);
 
 UCLASS(ClassGroup=(COOP), meta=(BlueprintSpawnableComponent))
 class COOPSHOOTER_API USHealthComponent : public UActorComponent

@@ -26,7 +26,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void OnHealthChanged(USHealthComponent* H, float Health, float HealthDelta,
+	void OnHealthChanged(float Health, float HealthDelta,
 		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 
@@ -54,4 +54,10 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Exploded)
 	bool bHasExploded = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float ExplosionDamage = 50.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float ExplosionRadius = 200.f;
 };
