@@ -12,6 +12,7 @@
 #include "GameFramework/Character.h"
 #include "DrawDebugHelpers.h"
 #include "SCharacter.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 ASTrackerBot::ASTrackerBot()
@@ -42,6 +43,8 @@ void ASTrackerBot::BeginPlay()
 
 	// Find initial target point
 	NextPathPoint = GetNextPathPoint();
+
+	UGameplayStatics::SpawnSoundAttached(RollingSound, RootComponent);
 }
 
 void ASTrackerBot::HandleTakeDamage(float Health, float HealthDelta,
@@ -79,9 +82,11 @@ void ASTrackerBot::SelfDestruct()
 	IgnoredActors.Add(this);
 	UGameplayStatics::ApplyRadialDamage(this, ExplosionDamage, GetActorLocation(), ExplosionRadius, nullptr,  IgnoredActors, this, GetInstigatorController(), true);
 
-	Destroy();
-
 	DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12, FColor::Orange, false, 2.f, 0, 2.f);
+
+	UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSound, GetActorLocation());
+
+	Destroy();
 }
 
 // Called every frame
@@ -89,6 +94,20 @@ void ASTrackerBot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	MoveToPlayer();
+
+	// Set Rolling sound volume based on the current velocity.
+	if (RollingSound)
+	{
+		const float Velocity = GetVelocity().Size();
+		const float VolumeMultiplier = FMath::GetMappedRangeValueClamped({10.f, 1000.f}, {0.f, 2.f}, Velocity);
+
+		RollingSound->VolumeMultiplier = VolumeMultiplier;
+	}
+}
+
+void ASTrackerBot::MoveToPlayer()
+{
 	float DistanceToTarget = (GetActorLocation() - NextPathPoint).Size();
 
 	if (DistanceToTarget <= RequiredDistanceToTarget)
@@ -125,7 +144,9 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (bIsPlayer && !TimerHandle_SelfDamage.IsValid())
 	{
 		// Start self destruction sequence
-		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASTrackerBot::DamageSelf, 0.5f, true, 0.f);
+		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASTrackerBot::DamageSelf, SelfDamageIntervalSeconds, true, 0.f);
+
+		UGameplayStatics::SpawnSoundAttached(SelfDestructSound, RootComponent);
 	}
 }
 

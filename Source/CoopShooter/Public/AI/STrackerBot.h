@@ -6,7 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "STrackerBot.generated.h"
 
- class USphereComponent;
+class USoundCue;
+class USphereComponent;
 class USHealthComponent;
 
 UCLASS()
@@ -30,6 +31,7 @@ protected:
 	FVector GetNextPathPoint();
 
 	void SelfDestruct();
+	void MoveToPlayer();
 
 	UFUNCTION()
 	void HandleTakeDamage(float Health, float HealthDelta, 
@@ -70,7 +72,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float ExplosionRadius = 200.f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float SelfDamageIntervalSeconds = 0.5;
+
 	bool bHasExploded = false;
 
 	FTimerHandle TimerHandle_SelfDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundCue* SelfDestructSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundCue* ExplosionSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundCue* RollingSound;
 };

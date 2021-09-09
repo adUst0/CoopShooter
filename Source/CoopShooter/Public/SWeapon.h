@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "SWeapon.generated.h"
 
+class USoundCue;
 class USkeletalMeshComponent;
 class UDamageType;
 class UParticleSystem;
@@ -97,7 +98,7 @@ protected:
 	float SecondsBetweenShots;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	USoundBase* FireSound;
+	USoundCue* FireSound;
 
 	UPROPERTY(ReplicatedUsing=OnRep_HitScanTrace)
 	FHitScanTrace HitScanTrace;

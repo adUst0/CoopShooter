@@ -10,6 +10,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "PhysicsCore\Public\Chaos\ChaosEngineInterface.h"
+#include "Sound/SoundCue.h"
 
 namespace
 {
