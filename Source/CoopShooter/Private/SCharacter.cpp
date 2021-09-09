@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "CoopShooter/CoopShooter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -20,6 +21,7 @@ ASCharacter::ASCharacter()
 
 	ACharacter::GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	ACharacter::GetMovementComponent()->GetNavAgentPropertiesRef().bCanJump = true;
+	ACharacter::GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_CHANNEL_WEAPON, ECR_Ignore);
 
@@ -84,6 +86,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
+
+	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &ASCharacter::StartRun);
+	PlayerInputComponent->BindAction("Run", IE_Released, this, &ASCharacter::StopRun);
 
 	PlayerInputComponent->BindAxis("LookUp", this, &ASCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Turn", this, &ASCharacter::AddControllerYawInput);
@@ -173,4 +178,14 @@ void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	// Replicate to every client that is connected to us
 	DOREPLIFETIME(ASCharacter, CurrentWeapon);
 	DOREPLIFETIME(ASCharacter, bIsDead);
+}
+
+void ASCharacter::StartRun()
+{
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+}
+
+void ASCharacter::StopRun()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }

@@ -44,6 +44,9 @@ protected:
 	void StartFire();
 	void StopFire();
 
+	void StartRun();
+	void StopRun();
+
 	UFUNCTION()
 	void OnHealthChanged(float Health, float HealthDelta, 
 		const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
@@ -71,6 +74,12 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
 	FName WeaponAttachSocketName = "WeaponSocket";
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float WalkSpeed = 600.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float RunSpeed = 900.f;
 
 	float DefaultFOV;
 
