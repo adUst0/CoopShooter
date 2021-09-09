@@ -87,4 +87,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	USoundCue* RollingSound;
+
+	bool bStartedSelfDestruction = false;
 };

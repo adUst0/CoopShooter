@@ -28,11 +28,14 @@ protected:
 	void HandleTakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, 
 		AController* InstigatedBy, AActor* DamageCauser);
 
+	UFUNCTION()
+	void OnRep_Health(float OldHealth);
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
 	float StartingHealth = 100.f;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "HealthComponent")
+	UPROPERTY(ReplicatedUsing=OnRep_Health, VisibleAnywhere, BlueprintReadOnly, Category = "HealthComponent")
 	float CurrentHealth;
 
 };

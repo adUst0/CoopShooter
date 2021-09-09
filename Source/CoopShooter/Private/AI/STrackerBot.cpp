@@ -41,8 +41,11 @@ void ASTrackerBot::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Find initial target point
-	NextPathPoint = GetNextPathPoint();
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		// Find initial target point
+		NextPathPoint = GetNextPathPoint();
+	}
 
 	UGameplayStatics::SpawnSoundAttached(RollingSound, RootComponent);
 }
@@ -77,16 +80,21 @@ void ASTrackerBot::SelfDestruct()
 	bHasExploded = true;
 
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
-
-	TArray<AActor*> IgnoredActors;
-	IgnoredActors.Add(this);
-	UGameplayStatics::ApplyRadialDamage(this, ExplosionDamage, GetActorLocation(), ExplosionRadius, nullptr,  IgnoredActors, this, GetInstigatorController(), true);
-
+	UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSound, GetActorLocation());
 	DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12, FColor::Orange, false, 2.f, 0, 2.f);
 
-	UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSound, GetActorLocation());
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		TArray<AActor*> IgnoredActors;
+		IgnoredActors.Add(this);
 
-	Destroy();
+		UGameplayStatics::ApplyRadialDamage(this, ExplosionDamage, GetActorLocation(), ExplosionRadius, nullptr, IgnoredActors, this, GetInstigatorController(), true);
+
+		SetLifeSpan(2.f);
+	}
+
+	MeshComponent->SetVisibility(false, true);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 // Called every frame
@@ -94,10 +102,13 @@ void ASTrackerBot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	MoveToPlayer();
+	if (GetLocalRole() == ROLE_Authority && !bHasExploded)
+	{
+		MoveToPlayer();
+	}
 
 	// Set Rolling sound volume based on the current velocity.
-	if (RollingSound)
+	if (RollingSound && !bHasExploded)
 	{
 		const float Velocity = GetVelocity().Size();
 		const float VolumeMultiplier = FMath::GetMappedRangeValueClamped({10.f, 1000.f}, {0.f, 2.f}, Velocity);
@@ -141,10 +152,15 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	const bool bIsPlayer = Cast<ASCharacter>(OtherActor) != nullptr;
-	if (bIsPlayer && !TimerHandle_SelfDamage.IsValid())
+	if (bIsPlayer && !bStartedSelfDestruction && !bHasExploded)
 	{
-		// Start self destruction sequence
-		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASTrackerBot::DamageSelf, SelfDamageIntervalSeconds, true, 0.f);
+		if (GetLocalRole() == ROLE_Authority)
+		{
+			// Start self destruction sequence
+			GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASTrackerBot::DamageSelf, SelfDamageIntervalSeconds, true, 0.f);
+		}
+
+		bStartedSelfDestruction = true;
 
 		UGameplayStatics::SpawnSoundAttached(SelfDestructSound, RootComponent);
 	}
