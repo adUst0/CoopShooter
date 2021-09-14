@@ -108,10 +108,10 @@ void ASTrackerBot::Tick(float DeltaTime)
 	}
 
 	// Set Rolling sound volume based on the current velocity.
-	if (RollingSound && !bHasExploded)
+	if (RollingSound)
 	{
 		const float Velocity = GetVelocity().Size();
-		const float VolumeMultiplier = FMath::GetMappedRangeValueClamped({10.f, 1000.f}, {0.f, 2.f}, Velocity);
+		const float VolumeMultiplier = bHasExploded ? 0 : FMath::GetMappedRangeValueClamped({10.f, 1000.f}, {0.f, 2.f}, Velocity);
 
 		RollingSound->VolumeMultiplier = VolumeMultiplier;
 	}
@@ -144,7 +144,7 @@ FVector ASTrackerBot::GetNextPathPoint()
 	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);;
 
 	// Return next point in the path
-	return NavPath->PathPoints.Num() > 1 ? NavPath->PathPoints[1] : GetActorLocation();
+	return NavPath && NavPath->PathPoints.Num() > 1 ? NavPath->PathPoints[1] : GetActorLocation();
 }
 
 void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
