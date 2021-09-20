@@ -16,6 +16,9 @@ public:
 	// Sets default values for this actor's properties
 	USHealthComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "HealthComponents")
+	void Heal(float HealAmount);
+
 	
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;

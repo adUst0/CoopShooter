@@ -33,10 +33,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Componentts")
 	UDecalComponent* DecalComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "PickupActor")
+	UPROPERTY(EditInstanceOnly, Category = "PickupActor")
 	TSubclassOf<ASPowerupActor> PowerupClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "PickupActor")
+	UPROPERTY(EditInstanceOnly, Category = "PickupActor")
 	float CooldownDuration = 10.f;
 
 	ASPowerupActor* PowerupInstance;
