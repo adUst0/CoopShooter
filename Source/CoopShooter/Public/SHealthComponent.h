@@ -23,6 +23,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
 
+	float GetHealth() const { return CurrentHealth; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
